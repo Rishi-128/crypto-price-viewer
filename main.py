@@ -216,7 +216,7 @@ def get_weekly_data(coin_id, api_key=""):
         headers = {}
     
     params = {
-        "vs_currency": "u  sd",
+        "vs_currency": "usd",
         "days": "7",
         "interval": "daily"
     }
@@ -296,6 +296,13 @@ if weekly_data:
         
       
         fig = go.Figure()
+        # Convert hex color to rgba for fillcolor
+        def hex_to_rgba(hex_color, alpha=0.1):
+            hex_color = hex_color.lstrip('#')
+            lv = len(hex_color)
+            rgb = tuple(int(hex_color[i:i+2], 16) for i in range(0, lv, 2))
+            return f'rgba({rgb[0]},{rgb[1]},{rgb[2]},{alpha})'
+
         fig.add_trace(go.Scatter(
             x=df["date"],
             y=df["price"],
@@ -304,7 +311,7 @@ if weekly_data:
             line=dict(color=selected_coin["color"], width=3, shape='spline'),
             marker=dict(size=8, color=selected_coin["color"]),
             fill='tozeroy',
-            fillcolor=f'rgba{tuple(list(bytes.fromhex(selected_coin["color"][1:])) + [0.1])}',
+            fillcolor=hex_to_rgba(selected_coin["color"], 0.1),
             hovertemplate='%{x|%b %d}<br><b>$%{y:,.2f}</b><extra></extra>'
         ))
         
