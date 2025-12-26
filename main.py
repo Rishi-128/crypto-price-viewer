@@ -4,11 +4,20 @@ import requests
 import plotly.graph_objects as go
 from datetime import datetime
 import time
+import os
 
 # ============================================
-# 🔑 ADD YOUR FREE COINGECKO API KEY HERE
+# 🔑 API KEY - Loaded from .env or Streamlit secrets
 # ============================================
-API_KEY = "CG-LWkY8E3RX7gewiyfq32jrhpw"  # Paste your key inside the quotes, e.g., "CG-xxxxxxxxxxxx"
+# For local: Create a .env file with COINGECKO_API_KEY=your_key
+# For Streamlit Cloud: Add to Secrets in app settings
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+API_KEY = os.getenv("COINGECKO_API_KEY", "") or st.secrets.get("COINGECKO_API_KEY", "")
 # ============================================
 
 # Page configuration
