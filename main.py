@@ -6,11 +6,7 @@ from datetime import datetime
 import time
 import os
 
-# ============================================
-# 🔑 API KEY - Loaded from .env or Streamlit secrets
-# ============================================
-# For local: Create a .env file with COINGECKO_API_KEY=your_key
-# For Streamlit Cloud: Add to Secrets in app settings
+
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -18,16 +14,15 @@ except ImportError:
     pass
 
 API_KEY = os.getenv("COINGECKO_API_KEY", "") or st.secrets.get("COINGECKO_API_KEY", "")
-# ============================================
 
-# Page configuration
+
+
 st.set_page_config(
     page_title="Crypto Price Viewer",
     page_icon="🪙",
     layout="wide"
 )
 
-# Top 10 Cryptocurrencies with their info
 COINS = {
     "Bitcoin": {"id": "bitcoin", "symbol": "BTC", "icon": "₿", "color": "#F7931A"},
     "Ethereum": {"id": "ethereum", "symbol": "ETH", "icon": "Ξ", "color": "#627EEA"},
@@ -41,7 +36,6 @@ COINS = {
     "TRON": {"id": "tron", "symbol": "TRX", "icon": "⚡", "color": "#FF0013"}
 }
 
-# Custom CSS for beautiful styling
 st.markdown("""
     <style>
     /* Main price display */
@@ -142,24 +136,21 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Title and Header
+
 st.markdown('<div class="main-header">', unsafe_allow_html=True)
 st.title("🪙 Crypto Price Viewer")
 st.caption("Real-time cryptocurrency prices powered by CoinGecko")
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Initialize selected coin in session state
 if 'selected_coin' not in st.session_state:
     st.session_state.selected_coin = "Bitcoin"
 
-# Sidebar for coin selection
 with st.sidebar:
     st.markdown("## 🎯 Select Coin")
     st.caption("Click any coin below to view its data")
     
     st.markdown("---")
-    
-    # Display all coins as clickable buttons
+  
     for coin_name, coin_info in COINS.items():
         is_selected = coin_name == st.session_state.selected_coin
         
@@ -174,25 +165,23 @@ with st.sidebar:
             st.rerun()
     
     st.markdown("---")
-    
-    # Refresh button
+  
+   
     if st.button("🔄 Refresh Data", use_container_width=True, type="primary"):
         st.cache_data.clear()
         st.rerun()
     
     st.caption("Data updates every 30 seconds")
 
-# Get selected coin info
+
 selected_coin_name = st.session_state.selected_coin
 selected_coin = COINS[selected_coin_name]
 
-# Use hardcoded API key
 st.session_state.api_key = API_KEY
 
-# Function to get current price for any coin
-@st.cache_data(ttl=30)  # Faster with API key
+@st.cache_data(ttl=30)  
 def get_coin_price(coin_id, api_key=""):
-    # Use demo API if key provided
+    
     if api_key:
         url = "https://api.coingecko.com/api/v3/simple/price"
         headers = {"x-cg-demo-api-key": api_key}
@@ -215,10 +204,10 @@ def get_coin_price(coin_id, api_key=""):
     except requests.exceptions.RequestException as e:
         return None
 
-# Function to get weekly price data for any coin
+
 @st.cache_data(ttl=120)  # Cache for 2 minutes
 def get_weekly_data(coin_id, api_key=""):
-    # Use demo API if key provided
+    
     if api_key:
         url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
         headers = {"x-cg-demo-api-key": api_key}
@@ -227,7 +216,7 @@ def get_weekly_data(coin_id, api_key=""):
         headers = {}
     
     params = {
-        "vs_currency": "usd",
+        "vs_currency": "u  sd",
         "days": "7",
         "interval": "daily"
     }
@@ -238,13 +227,11 @@ def get_weekly_data(coin_id, api_key=""):
     except requests.exceptions.RequestException as e:
         return None
 
-# Display selected coin header
 st.markdown(f"## {selected_coin['icon']} {selected_coin_name} ({selected_coin['symbol']})")
 
-# Main content
+
 col1, col2, col3 = st.columns([2, 2, 1])
 
-# Get current price for selected coin (pass API key)
 price_data = get_coin_price(selected_coin["id"], st.session_state.api_key)
 
 if price_data:
@@ -259,7 +246,7 @@ if price_data:
         st.subheader("💰 Current Price")
         st.markdown(f'<p class="big-price">${current_price:,.2f}</p>', unsafe_allow_html=True)
         
-        # 24h change with color
+       
         change_class = "price-up" if price_change_24h >= 0 else "price-down"
         change_symbol = "▲" if price_change_24h >= 0 else "▼"
         st.markdown(
@@ -267,7 +254,7 @@ if price_data:
             unsafe_allow_html=True
         )
         
-        # Last updated time
+  
         if last_updated:
             update_time = datetime.fromtimestamp(last_updated)
             st.caption(f"🕐 Updated: {update_time.strftime('%H:%M:%S')}")
@@ -293,7 +280,7 @@ if price_data:
 else:
     st.warning("⏳ Loading data... If this persists, add your FREE API key in the sidebar for better reliability.")
 
-# Weekly trend section
+
 st.markdown("---")
 st.subheader(f"📈 {selected_coin['symbol']} Weekly Price Trend")
 
@@ -303,11 +290,11 @@ if weekly_data:
     prices = weekly_data.get("prices", [])
     
     if prices:
-        # Create DataFrame
+     
         df = pd.DataFrame(prices, columns=["timestamp", "price"])
         df["date"] = pd.to_datetime(df["timestamp"], unit="ms")
         
-        # Create clean Plotly line chart
+      
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=df["date"],
@@ -337,7 +324,7 @@ if weekly_data:
         
         st.plotly_chart(fig, use_container_width=True)
         
-        # Weekly stats in nice columns
+       
         st.markdown("### 📊 Weekly Statistics")
         col3, col4, col5, col6 = st.columns(4)
         
@@ -358,7 +345,7 @@ if weekly_data:
         with col6:
             st.metric("📈 Week Avg", f"${week_avg:,.2f}")
         
-        # Data table in expander
+    
         with st.expander("📋 View Price History"):
             display_df = df.copy()
             display_df = display_df.sort_values("date", ascending=False)  # Most recent first
@@ -368,10 +355,6 @@ if weekly_data:
 else:
     st.info("⏳ Loading chart data...")
 
-# Footer
-st.markdown("---")
-st.caption(f"📡 Data by CoinGecko API | 🕐 {datetime.now().strftime('%H:%M:%S')} | Auto-refresh: 60s")
 
-# Auto-refresh every 60 seconds
 time.sleep(60)
 st.rerun()
